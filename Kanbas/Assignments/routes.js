@@ -1,68 +1,72 @@
-import Database from "../Database/index.js";
+import * as dao from "./dao.js";
 
 export default function AssignmentRoutes(app) {
+  // Get all assignments
+  app.get("/api/assignments", async (req, res) => {
+    try {
+      const assignments = await dao.findAllAssignments();
+      res.send(assignments);
+    } catch (error) {
+      console.error("Error fetching assignments:", error);
+      res.status(500).json({ error: "Failed to fetch assignments." });
+    }
+  });
 
-    // Retrieve all assignments for a specific course
-    app.get("/api/courses/:courseId/assignments", (req, res) => {
-        const { courseId } = req.params;
-        const assignments = Database.assignments.filter((a) => a.course === courseId);
-        res.send(assignments);
-    });
+  // Create a new assignment
+  app.post("/api/assignments", async (req, res) => {
+    try {
+      const assignment = req.body;
+      const newAssignment = await dao.createAssignment(assignment);
+      res.status(201).send(newAssignment);
+    } catch (error) {
+      console.error("Error creating assignment:", error);
+      res.status(500).json({ error: "Failed to create assignment." });
+    }
+  });
 
-    // Create a new assignment for a specific course
-    app.post("/api/courses/:courseId/assignments", (req, res) => {
-        const { courseId } = req.params;
+  // Update an assignment by ID
+  app.put("/api/assignments/:assignmentId", async (req, res) => {
+    try {
+      const { assignmentId } = req.params;
+      const assignmentUpdates = req.body;
+      const status = await dao.updateAssignment(assignmentId, assignmentUpdates);
+      if (!status.modifiedCount) {
+        return res.status(404).json({ error: `Assignment with ID ${assignmentId} not found.` });
+      }
+      res.status(200).send({ success: true });
+    } catch (error) {
+      console.error("Error updating assignment:", error);
+      res.status(500).json({ error: "Failed to update assignment." });
+    }
+  });
 
-        const newAssignment = {
-            ...req.body,
-            course: courseId,
-            _id: new Date().getTime().toString(), // Generate a unique ID based on timestamp
-        };
+  // Delete an assignment by ID
+  app.delete("/api/assignments/:assignmentId", async (req, res) => {
+    try {
+      const { assignmentId } = req.params;
+      const status = await dao.deleteAssignment(assignmentId);
+      if (status.deletedCount === 0) {
+        return res.status(404).json({ error: `Assignment with ID ${assignmentId} not found.` });
+      }
+      res.status(200).send({ success: true });
+    } catch (error) {
+      console.error("Error deleting assignment:", error);
+      res.status(500).json({ error: "Failed to delete assignment." });
+    }
+  });
 
-        Database.assignments.push(newAssignment);
-        res.send(newAssignment);
-    });
-
-    // Update an existing assignment by ID
-    app.put("/api/assignments/:assignId", (req, res) => {
-        const { assignId } = req.params;
-        const assignmentUpdates = req.body;
-
-        console.log("Updating assignment with data:", assignmentUpdates);
-
-        const assignIndex = Database.assignments.findIndex((a) => a._id === assignId);
-
-        if (assignIndex === -1) {
-            return res.status(404).send({ error: "Assignment not found" });
-        }
-
-        const assignment = Database.assignments[assignIndex];
-        Object.assign(assignment, assignmentUpdates); // Merge updates into the existing assignment
-        res.send(assignment);
-    });
-
-    // Delete an assignment by ID
-    app.delete("/api/assignments/:assignId", (req, res) => {
-        const { assignId } = req.params;
-
-        Database.assignments = Database.assignments.filter((a) => a._id !== assignId);
-        console.log("Remaining assignments:", Database.assignments);
-
-        res.sendStatus(204); // No content
-    });
-
-    // Retrieve a specific assignment by course ID and assignment ID
-    app.get("/api/courses/:courseId/assignments/:assignmentId", (req, res) => {
-        const { courseId, assignmentId } = req.params;
-
-        const assignment = Database.assignments.find(
-            (a) => a._id === assignmentId && a.course === courseId
-        );
-
-        if (!assignment) {
-            return res.status(404).send({ error: "Assignment not found" });
-        }
-
-        res.send(assignment);
-    });
+  // Get a specific assignment by ID
+  app.get("/api/assignments/:assignmentId", async (req, res) => {
+    try {
+      const { assignmentId } = req.params;
+      const assignment = await dao.findAssignmentById(assignmentId);
+      if (!assignment) {
+        return res.status(404).json({ error: `Assignment with ID ${assignmentId} not found.` });
+      }
+      res.send(assignment);
+    } catch (error) {
+      console.error("Error fetching assignment:", error);
+      res.status(500).json({ error: "Failed to fetch the assignment." });
+    }
+  });
 }

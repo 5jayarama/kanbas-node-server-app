@@ -16,9 +16,6 @@ const CONNECTION_STRING = process.env.MONGO_CONNECTION_STRING || "mongodb://127.
 mongoose.connect(CONNECTION_STRING);
 const app = express();
 
-// Middleware to parse JSON requests
-app.use(express.json());
-
 // CORS Configuration
 app.use(
   cors({
@@ -37,6 +34,7 @@ if (process.env.NODE_ENV !== "development") {
   sessionOptions.proxy = true;
   sessionOptions.cookie = {
     sameSite: "none",
+    secure: true,
     domain: process.env.NODE_SERVER_DOMAIN,
   };
 }
@@ -53,4 +51,4 @@ Lab5(app);
 Hello(app);
 
 // Start the server
-app.listen(process.env.PORT || 4000)
+app.listen(process.env.PORT || 4000);
