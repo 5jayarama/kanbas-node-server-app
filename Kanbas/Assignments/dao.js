@@ -1,27 +1,36 @@
-import Database from "../Database/index.js";
 import model from "./model.js";
 
 export function findAllAssignments() {
-  return model.find(); // Fetch all assignments
+  // Fetch all assignments from the database
+  return model.find();
 }
+
 export function findAssignmentsForCourse(courseId) {
-  return model.find({ course: courseId }); // Match `course` by string (e.g., "RS101")
+  // Fetch assignments that belong to a specific course
+  return model.find({ course: courseId });
 }
-export function createAssignment(assignment) {
-  if (!assignment._id) {
-    throw new Error("Assignment must have a valid `_id` (e.g., 'A101')");
+
+export async function createAssignment(assignment) {
+    if (!assignment._id) {
+      assignment._id = new mongoose.Types.ObjectId().toString(); // Generate a unique string ID if none is provided
+    }
+    return await model.create(assignment);
   }
-  return model.create(assignment);
-}
+
 export function updateAssignment(assignmentId, assignmentUpdates) {
+  // Update an existing assignment by ID
   return model.updateOne(
-    { _id: assignmentId }, // Match by string `_id`
+    { _id: assignmentId }, // Match the assignment by its unique ID
     { $set: assignmentUpdates }
   );
 }
+
 export function deleteAssignment(assignmentId) {
-  return model.deleteOne({ _id: assignmentId }); // Match by string `_id`
+  // Delete an assignment by ID
+  return model.deleteOne({ _id: assignmentId });
 }
+
 export function findAssignmentById(assignmentId) {
-  return model.findById(assignmentId); // Fetch assignment by string `_id`
+  // Fetch a specific assignment by ID
+  return model.findById(assignmentId);
 }
