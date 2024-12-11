@@ -1,4 +1,3 @@
-import Database from "../Database/index.js";
 import model from "./model.js";
 export function updateModule(moduleId, moduleUpdates) {
   return model.updateOne({ _id: moduleId }, moduleUpdates);
