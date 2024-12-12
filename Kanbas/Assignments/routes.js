@@ -25,31 +25,34 @@ export default function AssignmentRoutes(app) {
     }
   });
 
-  // Update an assignment by ID for a specific course
   app.put("/api/courses/:courseId/assignments/:assignmentId", async (req, res) => {
     try {
-      const { assignmentId } = req.params;
-      const assignmentUpdates = req.body;
-      const status = await dao.updateAssignment(assignmentId, assignmentUpdates);
-      if (!status.modifiedCount) {
-        return res.status(404).json({ error: `Assignment with ID ${assignmentId} not found.` });
-      }
-      res.status(200).send({ success: true });
-    } catch (error) {
-      console.error("Error updating assignment:", error);
-      res.status(500).json({ error: "Failed to update assignment." });
-    }
-  });
+        const { courseId, assignmentId } = req.params;
+        const assignmentUpdates = req.body;
+        if (!assignmentUpdates || typeof assignmentUpdates !== "object") {
+            return res.status(400).json({ error: "Invalid assignment updates." });
+        }
+        const status = await dao.updateAssignment(assignmentId, assignmentUpdates);
 
-  // Delete an assignment by ID for a specific course
-  app.delete("/api/courses/:courseId/assignments/:assignmentId", async (req, res) => {
+        if (!status.modifiedCount) {
+            return res.status(404).json({ error: `Assignment with ID ${assignmentId} not found.` });
+        }
+        console.info(`Assignment with ID ${assignmentId} for course ${courseId} updated successfully.`);
+        res.status(200).json({ success: true, message: "Assignment updated successfully." });
+    } catch (error) {
+        console.error("Error updating assignment:", error);
+        res.status(500).json({ error: "Failed to update assignment." });
+    }
+});
+
+  app.delete("/api/assignments/:assignmentId", async (req, res) => {
+    const { assignmentId } = req.params;
     try {
-      const { assignmentId } = req.params;
       const status = await dao.deleteAssignment(assignmentId);
-      if (status.deletedCount === 0) {
+      if (!status.deletedCount) {
         return res.status(404).json({ error: `Assignment with ID ${assignmentId} not found.` });
       }
-      res.status(200).send({ success: true });
+      res.status(204).end();
     } catch (error) {
       console.error("Error deleting assignment:", error);
       res.status(500).json({ error: "Failed to delete assignment." });

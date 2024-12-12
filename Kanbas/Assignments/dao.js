@@ -15,10 +15,12 @@ export function createAssignment(assignment) {
 }
 
 export function updateAssignment(assignmentId, assignmentUpdates) {
-  // Update an existing assignment by ID
+  if (!assignmentId || !assignmentUpdates || typeof assignmentUpdates !== "object") {
+      throw new Error("Invalid arguments: assignmentId and assignmentUpdates are required.");
+  }
   return model.updateOne(
-    { _id: assignmentId }, // Match the assignment by its unique ID
-    { $set: assignmentUpdates }
+      { _id: assignmentId }, // Match the assignment by its unique ID
+      { $set: assignmentUpdates }
   );
 }
 
