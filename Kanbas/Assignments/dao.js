@@ -9,12 +9,10 @@ export function findAssignmentsForCourse(courseId) {
   return model.find({ course: courseId });
 }
 
-export async function createAssignment(assignment) {
-    if (!assignment._id) {
-      assignment._id = new mongoose.Types.ObjectId().toString(); // Generate a unique string ID if none is provided
-    }
-    return await model.create(assignment);
-  }
+export function createAssignment(assignment) {
+  delete assignment._id;
+  return model.create(assignment);
+}
 
 export function updateAssignment(assignmentId, assignmentUpdates) {
   // Update an existing assignment by ID
