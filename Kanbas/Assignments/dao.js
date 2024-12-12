@@ -1,14 +1,35 @@
 import model from "./model.js";
-export async function findAssignmentsForCourse(courseId) {
-    return await model.find({ course: courseId });
+
+export function findAllAssignments() {
+  // Fetch all assignments from the database
+  return model.find();
 }
+
+export function findAssignmentsForCourse(courseId) {
+  return model.find({ course: courseId });
+}
+
 export async function createAssignment(assignment) {
-    delete assignment._id;
+    if (!assignment._id) {
+      assignment._id = new mongoose.Types.ObjectId().toString(); // Generate a unique string ID if none is provided
+    }
     return await model.create(assignment);
+  }
+
+export function updateAssignment(assignmentId, assignmentUpdates) {
+  // Update an existing assignment by ID
+  return model.updateOne(
+    { _id: assignmentId }, // Match the assignment by its unique ID
+    { $set: assignmentUpdates }
+  );
 }
-export async function deleteAssignment(assignmentId) {
-    return await model.deleteOne({ _id: assignmentId });
+
+export function deleteAssignment(assignmentId) {
+  // Delete an assignment by ID
+  return model.deleteOne({ _id: assignmentId });
 }
-export async function updateAssignment(assignmentId, assignmentUpdates) {
-    return await model.updateOne({ _id: assignmentId }, { $set: assignmentUpdates });
+
+export function findAssignmentById(assignmentId) {
+  // Fetch a specific assignment by ID
+  return model.findById(assignmentId);
 }
